@@ -9799,10 +9799,13 @@ QualType Sema::deduceVarTypeFromInitializer(VarDecl *VDecl,
 void Sema::AddInitializerToDecl(Decl *RealDecl, Expr *Init, bool DirectInit) {
   // If there is no declaration, there was an error parsing it.  Just ignore
   // the initializer.
-  if (!RealDecl || RealDecl->isInvalidDecl()) {
-    CorrectDelayedTyposInExpr(Init, dyn_cast_or_null<VarDecl>(RealDecl));
-    return;
-  }
+
+  // CODEMIND FIX: Fault tolerant
+  // for decl with initializer with unknown type
+//  if (!RealDecl || RealDecl->isInvalidDecl()) {
+//    CorrectDelayedTyposInExpr(Init, dyn_cast_or_null<VarDecl>(RealDecl));
+//    return;
+//  }
 
   if (CXXMethodDecl *Method = dyn_cast<CXXMethodDecl>(RealDecl)) {
     // Pure-specifiers are handled in ActOnPureSpecifier.

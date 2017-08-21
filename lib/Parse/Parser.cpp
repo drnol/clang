@@ -1514,9 +1514,24 @@ Parser::TryAnnotateName(bool IsAddressOfOperand,
     // We've "annotated" this as a keyword.
     return ANK_Success;
 
-  case Sema::NC_Unknown:
+  case Sema::NC_Unknown: {
     // It's not something we know about. Leave it unannotated.
-    break;
+
+    // CODEMIND FIX: Fault tolerant
+    // for decl with unknown type
+    SourceLocation BeginLoc = NameLoc;
+    if (SS.isNotEmpty())
+      BeginLoc = SS.getBeginLoc();
+
+    ParsedType Ty = ParsedType::make(QualType());
+    Tok.setKind(tok::annot_typename);
+    setTypeAnnotation(Tok, Ty);
+    Tok.setAnnotationEndLoc(Tok.getLocation());
+    Tok.setLocation(BeginLoc);
+    PP.AnnotateCachedTokens(Tok);
+
+    return ANK_Success;
+  }
 
   case Sema::NC_Type: {
     SourceLocation BeginLoc = NameLoc;
