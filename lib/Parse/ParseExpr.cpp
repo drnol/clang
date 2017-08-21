@@ -2414,7 +2414,27 @@ Parser::ParseParenExpression(ParenParseOption &ExprType, bool stopIfCastExpr,
       Result = Actions.ActOnParenListExpr(OpenLoc, Tok.getLocation(),
                                           ArgExprs);
     }
-  } else {
+  }
+  else if(ExprType == CastExpr) {
+      // CODEMIND FIX: Fault tolerant
+      // type casting to unknown type
+      T.consumeClose();
+      ColonProtection.restore();
+
+      DeclSpec DS(AttrFactory);
+      Declarator DeclaratorInfo(DS, Declarator::TypeNameContext);
+
+      Result = ParseCastExpression(/*isUnaryExpression=*/false,
+                                   /*isAddressOfOperand=*/false,
+                                   /*isTypeCast=*/IsTypeCast);
+      if (!Result.isInvalid()) {
+        Result = Actions.ActOnCastExpr(getCurScope(), OpenLoc,
+                                       DeclaratorInfo, CastTy,
+                                       RParenLoc, Result.get());
+      }
+      return Result;
+  }
+  else {
     InMessageExpressionRAIIObject InMessage(*this, false);
 
     Result = ParseExpression(MaybeTypeCast);
